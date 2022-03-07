@@ -295,6 +295,7 @@ final class DoctrineDatabase extends Gateway
     public function moveSubtreeNodes(array $sourceNodeData, array $destinationNodeData): void
     {
         $fromPathString = $sourceNodeData['path_string'];
+        $contentObjectId = $sourceNodeData['contentobject_id'];
 
         $rows = $this->getSubtreeNodesData($fromPathString);
 
@@ -304,7 +305,7 @@ final class DoctrineDatabase extends Gateway
             array_slice(explode('/', $sourceNodeData['path_identification_string']), 0, -1)
         );
 
-        $hiddenNodeIds = $this->getHiddenNodeIds($rows);
+        $hiddenNodeIds = $this->getHiddenNodeIds($contentObjectId);
         foreach ($rows as $row) {
             // Prefixing ensures correct replacement when old parent is root node
             $newPathString = str_replace(
@@ -338,19 +339,24 @@ final class DoctrineDatabase extends Gateway
         }
     }
 
-    private function getHiddenNodeIds(array $rows): array
+    private function getHiddenNodeIds(int $contentObjectId)
     {
-        return array_map(
-            static function (array $row) {
-                return (int)$row['node_id'];
-            },
-            array_filter(
-                $rows,
-                static function (array $row) {
-                    return !empty($row['is_hidden']);
-                }
-            )
-        );
+        $query = $this->buildHiddenSubtreeQuery('node_id');
+        $expr = $query->expr();
+        $query
+            ->andWhere(
+                $expr->eq   (
+                    'id',
+                    $query->createPositionalParameter(
+                        $contentObjectId,
+                        ParameterType::INTEGER
+                    )
+                )
+            );
+        $statement = $query->execute();
+
+        $result = $statement->fetchAll(FetchMode::COLUMN);
+        return array_map('intval', $result);
     }
 
     /**
