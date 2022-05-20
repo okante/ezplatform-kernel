@@ -345,7 +345,7 @@ final class DoctrineDatabase extends Gateway
         $expr = $query->expr();
         $query
             ->andWhere(
-                $expr->eq   (
+                $expr->eq(
                     'id',
                     $query->createPositionalParameter(
                         $contentObjectId,
@@ -355,17 +355,17 @@ final class DoctrineDatabase extends Gateway
             );
         $statement = $query->execute();
 
-        $result = $statement->fetchAll(FetchMode::COLUMN);
+        $result = $statement->fetchFirstColumn();
+
         return array_map('intval', $result);
     }
 
     /**
      * @param int[] $hiddenNodeIds
      */
-    private function isHiddenByParent(string $pathString, array $hiddenNodeIds): bool
+    private function isHiddenByParentOrSelf(string $pathString, array $hiddenNodeIds): bool
     {
         $parentNodeIds = array_map('intval', explode('/', trim($pathString, '/')));
-        array_pop($parentNodeIds); // remove self
         foreach ($parentNodeIds as $parentNodeId) {
             if (in_array($parentNodeId, $hiddenNodeIds, true)) {
                 return true;
@@ -426,7 +426,7 @@ final class DoctrineDatabase extends Gateway
             $query->set(
                 'is_invisible',
                 $query->createPositionalParameter(
-                    $this->isHiddenByParent($newPathString, $hiddenNodeIds) ? 1 : 0,
+                    $this->isHiddenByParentOrSelf($newPathString, $hiddenNodeIds) ? 1 : 0,
                     ParameterType::INTEGER
                 )
             );
