@@ -3242,7 +3242,6 @@ class LocationServiceTest extends BaseTest
      * Test that is_visible is set correct for children when moving a location where a child is hidden by content (not by location).
      *
      * @covers \eZ\Publish\API\Repository\LocationService::moveSubtree
-     * depends eZ\Publish\API\Repository\Tests\LocationServiceTest::testLoadLocation
      */
     public function testMoveSubtreeKeepsContentHiddenOnChildrenAndParent(): void
     {
@@ -3302,7 +3301,6 @@ class LocationServiceTest extends BaseTest
      * Test that is_visible is set correct for children when moving a content which is hidden (location is not hidden).
      *
      * @covers \eZ\Publish\API\Repository\LocationService::moveSubtree
-     * depends eZ\Publish\API\Repository\Tests\LocationServiceTest::testLoadLocation
      */
     public function testMoveSubtreeKeepsContentHiddenOnChildren(): void
     {
@@ -3343,7 +3341,8 @@ class LocationServiceTest extends BaseTest
         self::assertTrue($movedLocation->getContentInfo()->isHidden);
 
         // Assert children of Moved location
-        foreach ([$subFolderContent1->contentInfo->getMainLocation(), $subFolderContent2->contentInfo->getMainLocation()] as $childLocation) {
+        $childLocations = [$subFolderContent1->contentInfo->getMainLocation(), $subFolderContent2->contentInfo->getMainLocation()];
+        foreach ( $childLocations as $childLocation) {
             $this->assertPropertiesCorrect(
                 [
                     'hidden' => false,
