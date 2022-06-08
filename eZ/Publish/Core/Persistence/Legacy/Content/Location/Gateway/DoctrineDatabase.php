@@ -339,7 +339,10 @@ final class DoctrineDatabase extends Gateway
         }
     }
 
-    private function getHiddenNodeIds(int $contentObjectId)
+    /*
+     * @return int[]
+     */
+    private function getHiddenNodeIds(int $contentObjectId): array
     {
         $query = $this->buildHiddenSubtreeQuery('node_id');
         $expr = $query->expr();
